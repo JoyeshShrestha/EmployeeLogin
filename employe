@@ -91,3 +91,134 @@ public class controller {
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.mycompany.intern_task.authenticate.employee;
+
+import com.google.gson.Gson;
+import java.sql.SQLException;
+import spark.Request;
+import spark.Response;
+
+/**
+ *
+ * @author lenovo
+ */
+public class controller {
+
+    loginDoa login = new loginDoa();
+
+    public String login(Request request, Response response) throws SQLException {
+        response.type("application/json");
+
+//        employees employee = new employees();
+        String emailEntered = request.queryParams("email");
+        String passwordEntered = request.queryParams("password");
+
+        String correctPassword = login.checkEmail(emailEntered, passwordEntered);
+//        System.out.println(correctPassword);
+//        System.out.println(employeeObj.password);
+//        System.out.println(employeeObj.getMunicipality());
+
+        if (correctPassword == null) {
+            return "invalid";
+        } else {
+            if (correctPassword.equals(passwordEntered)) {
+                employees employeeObj = login.check(emailEntered);
+
+                if (employeeObj.getStatus().equals("disable")) {
+
+                    return "Account Disabled";
+
+                } else {
+                    login.changeZero(emailEntered);
+
+                    request.session(true);
+
+                    request.session().attribute("employeeObject", new Gson().toJson(employeeObj));
+                    return "Login Successful";
+
+                }
+            } else {
+                employees employeeObj = login.check(emailEntered);
+
+//                boolean login_count = login.counter(emailEntered, employeeObj.getLogin_count(), employeeObj.getStatus());
+                if (login.counter(emailEntered, employeeObj.getLogin_count(), employeeObj.getStatus())) {
+                    return "Incorrect Password";
+                } else {
+                    return "Account Disabled ";
+                }
+
+            }
+        }
+
+    }
+
+    /**
+     *
+     * @param request
+     * @param response
+     * @return
+     * @throws SQLException
+     */
+    public boolean check(Request request, Response response) throws SQLException {
+        response.type("application/json");
+
+        request.session(true);
+
+//        Object result = ;
+//        String resultString = result.toString();
+        String req = request.session().attribute("employeeObject");
+
+        if (req == null) {
+            return false;
+        } else {
+            return true;
+        }
+//        } else {
+////       result = new Gson().toJson(result);
+//            EmployeesCheck toEdit = new Gson().fromJson(req, EmployeesCheck.class);
+////        resultString.toJson();
+//
+//            if (toEdit.role_name.equals("SuperAdmin")) {
+//                return "Welcome SuperAdmin";
+//            } else if (toEdit.role_name.equals("User")) {
+//                return "Welcome User";
+//            }
+//
+//        }
+//        return true;
+    }
+
+}
+
